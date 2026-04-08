@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import json,sys; logs=json.load\\(sys.stdin\\); [print\\(l['Output'][:300]\\) for l in logs]\")",
+      "Bash(docker exec:*)"
+    ]
+  }
+}
