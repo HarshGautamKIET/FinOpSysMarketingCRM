@@ -422,8 +422,10 @@ function AuthScreen({
   onPasswordChange,
   onModeChange,
   onSubmit,
+  onResend,
 }) {
   const signingIn = mode === "signin";
+  const confirming = mode === "confirm";
   return (
     <div className="min-h-screen bg-[#f8f7ff] px-4 py-10 text-black">
       <div className="mx-auto grid w-full max-w-5xl gap-5 rounded-3xl border border-[#7F56D9]/20 bg-white/90 p-4 shadow-xl backdrop-blur md:grid-cols-[1.1fr_1fr] md:p-8">
@@ -439,46 +441,90 @@ function AuthScreen({
         </div>
 
         <div className="rounded-3xl border border-[#7F56D9]/15 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">{signingIn ? "Welcome back" : "Create your account"}</h2>
-          <p className="mt-1 text-sm text-[#101010]/55">{signingIn ? "Log in to continue to your dashboard." : "Use email and password to get started."}</p>
+          {confirming ? (
+            <div className="flex flex-col items-center text-center py-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#7F56D9]/10 text-2xl">✉️</div>
+              <h2 className="mt-4 text-xl font-semibold">Check your inbox</h2>
+              <p className="mt-2 text-sm text-[#101010]/55">
+                We sent a confirmation link to <span className="font-medium text-[#101010]">{email}</span>.
+                Click the link in that email, then come back and sign in.
+              </p>
+              {error && <p className="mt-3 w-full rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}
+              {notice && <p className="mt-3 w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{notice}</p>}
+              <button
+                type="button"
+                onClick={onResend}
+                disabled={busy}
+                className="mt-5 h-11 w-full rounded-2xl bg-[#7F56D9] text-sm font-semibold text-white transition hover:bg-[#6941C6] disabled:opacity-60"
+              >
+                {busy ? "Sending..." : "Resend confirmation email"}
+              </button>
+              <button
+                type="button"
+                onClick={() => onModeChange("signin")}
+                className="mt-3 text-sm font-medium text-[#7F56D9] hover:underline"
+              >
+                Back to sign in
+              </button>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold">{signingIn ? "Welcome back" : "Create your account"}</h2>
+              <p className="mt-1 text-sm text-[#101010]/55">{signingIn ? "Log in to continue to your dashboard." : "Use email and password to get started."}</p>
 
-          <form className="mt-5 space-y-3" onSubmit={onSubmit}>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => onEmailChange(e.target.value)}
-              placeholder="Email"
-              autoComplete="email"
-              className="h-11 w-full rounded-2xl border border-[#7F56D9]/20 bg-white px-4 text-sm outline-none placeholder:text-[#101010]/35 focus:border-[#7F56D9]"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => onPasswordChange(e.target.value)}
-              placeholder="Password"
-              autoComplete={signingIn ? "current-password" : "new-password"}
-              className="h-11 w-full rounded-2xl border border-[#7F56D9]/20 bg-white px-4 text-sm outline-none placeholder:text-[#101010]/35 focus:border-[#7F56D9]"
-            />
+              <form className="mt-5 space-y-3" onSubmit={onSubmit}>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => onEmailChange(e.target.value)}
+                  placeholder="Email"
+                  autoComplete="email"
+                  className="h-11 w-full rounded-2xl border border-[#7F56D9]/20 bg-white px-4 text-sm outline-none placeholder:text-[#101010]/35 focus:border-[#7F56D9]"
+                />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => onPasswordChange(e.target.value)}
+                  placeholder="Password"
+                  autoComplete={signingIn ? "current-password" : "new-password"}
+                  className="h-11 w-full rounded-2xl border border-[#7F56D9]/20 bg-white px-4 text-sm outline-none placeholder:text-[#101010]/35 focus:border-[#7F56D9]"
+                />
 
-            {error && <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}
-            {notice && <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{notice}</p>}
+                {error && (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                    <p>{error}</p>
+                    {signingIn && error.toLowerCase().includes("not confirmed") && (
+                      <button
+                        type="button"
+                        onClick={onResend}
+                        disabled={busy}
+                        className="mt-1 font-semibold underline hover:no-underline disabled:opacity-60"
+                      >
+                        Resend confirmation email
+                      </button>
+                    )}
+                  </div>
+                )}
+                {notice && <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{notice}</p>}
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="h-11 w-full rounded-2xl bg-[#7F56D9] text-sm font-semibold text-white transition hover:bg-[#6941C6] disabled:opacity-60"
-            >
-              {busy ? "Please wait..." : signingIn ? "Sign In" : "Create Account"}
-            </button>
-          </form>
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="h-11 w-full rounded-2xl bg-[#7F56D9] text-sm font-semibold text-white transition hover:bg-[#6941C6] disabled:opacity-60"
+                >
+                  {busy ? "Please wait..." : signingIn ? "Sign In" : "Create Account"}
+                </button>
+              </form>
 
-          <button
-            type="button"
-            onClick={() => onModeChange(signingIn ? "signup" : "signin")}
-            className="mt-4 text-sm font-medium text-[#7F56D9] hover:underline"
-          >
-            {signingIn ? "Need an account? Sign up" : "Already have an account? Sign in"}
-          </button>
+              <button
+                type="button"
+                onClick={() => onModeChange(signingIn ? "signup" : "signin")}
+                className="mt-4 text-sm font-medium text-[#7F56D9] hover:underline"
+              >
+                {signingIn ? "Need an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -769,14 +815,30 @@ export default function AccountingServicesCRM() {
         const { data, error } = await supabase.auth.signUp({ email, password: authPass });
         if (error) throw error;
         if (!data.session) {
-          setAuthNotice("Account created. Confirm your email if confirmation is enabled, then sign in.");
-        } else {
-          setAuthNotice("Account created and signed in.");
+          setAuthPass("");
+          setAuthMode("confirm");
+          return;
         }
       }
       setAuthPass("");
     } catch (err) {
       setAuthError(err?.message || "Authentication failed.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function resendAuth() {
+    if (!supabase) return;
+    setAuthBusy(true);
+    setAuthError("");
+    setAuthNotice("");
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email: authEmail.trim().toLowerCase() });
+      if (error) throw error;
+      setAuthNotice("Confirmation email resent. Check your inbox.");
+    } catch (err) {
+      setAuthError(err?.message || "Could not resend confirmation email.");
     } finally {
       setAuthBusy(false);
     }
@@ -1237,6 +1299,7 @@ export default function AccountingServicesCRM() {
           setAuthNotice("");
         }}
         onSubmit={submitAuth}
+        onResend={resendAuth}
       />
     );
   }
